@@ -1,0 +1,35 @@
+Medicare Provider Utilization and Payment Data: Part D Prescriber: Massachusetts Summary
+========================================================
+
+Data source: Medicare Provider Utilization and Payment Data: Part D Prescriber Public Use File (PUF)
+
+Data preparer: Centers for Medicare & Medicaid Services (CMS), based on information from CMS’s Prescription Drug Event Standard Analytic File, submitted by Medicare Advantage Prescription Drug (MAPD) plans and Prescription Drug Plans (PDP)
+
+Data description: Information on the prescription drugs prescribed in 2013 under the Medicare Part D Prescription Drug Program. The new dataset identifies providers using their National Provider Identifier (NPI) and the specific prescriptions that were dispensed on their behalf, listed by brand name (if applicable) and generic name.  For each prescriber and drug, the dataset includes the total number of prescriptions that were dispensed, which include original prescriptions and any refills, and the total drug cost.  The total drug cost includes the ingredient cost of the medication, dispensing fees, sales tax, and any applicable administration fees and is based on the amount paid by the Part D plan, Medicare beneficiary, government subsidies, and any other third-party payors.
+
+Reference:
+http://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Part-D-Prescriber.html
+
+```{r}
+# PartD_Prescriber_PUF_NPI_13 Summary Table downloaded from cms.gov as referenced above
+partd <- read.csv("partd.txt",sep="\t", header=TRUE)
+subpart <- select(partd, NPI, NPPES_PROVIDER_CITY, NPPES_PROVIDER_STATE, BENE_COUNT, TOTAL_CLAIM_COUNT, TOTAL_DRUG_COST)
+mass <- filter(subpart, NPPES_PROVIDER_STATE=="MA")
+mass <- na.omit(mass)
+
+mass$BENE_COUNT <- as.numeric(mass$BENE_COUNT)
+mass$TOTAL_CLAIM_COUNT <- as.numeric(mass$TOTAL_CLAIM_COUNT)
+mass$TOTAL_DRUG_COST <- as.numeric(mass$TOTAL_DRUG_COST)
+
+massBeneTotal <- aggregate(mass$BENE_COUNT, by=list(mass$NPPES_PROVIDER_CITY), FUN=sum)
+massClaimTotal <- aggregate(mass$TOTAL_CLAIM_COUNT, by=list(mass$NPPES_PROVIDER_CITY), FUN=sum)
+massCostTotal <- aggregate(mass$TOTAL_DRUG_COST, by=list(mass$NPPES_PROVIDER_CITY), FUN=sum)
+```
+
+
+
+```{r fig.width=7, fig.height=6}
+top_values <- tail(sort(massSubtotal$x), 10)
+lowest_values <- head(sort(massSubtotal$x), 10)
+```
+
